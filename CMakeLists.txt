@@ -1,10 +1,11 @@
-cmake_minimum_required( VERSION 3.5 )
+cmake_minimum_required( VERSION 3.10 )
 
 project( GLFW-CMake-starter )
 
 find_package( OpenGL REQUIRED )
 
 include_directories( ${OPENGL_INCLUDE_DIRS} )
+include_directories(glad/include)
 
 set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only" )
 set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
@@ -12,8 +13,9 @@ set( GLAD_GL "" )
 
 add_subdirectory( glfw )
 
-option( GLFW-CMAKE-STARTER-USE-GLFW-GLAD "Use GLAD from GLFW" ON )
-
+## Turn ON if intending to use gl.h from glfw.
+## ON does not work with LearnOpenGL. Had to add "glad/include" manually.
+option( GLFW-CMAKE-STARTER-USE-GLFW-GLAD "Use GLAD from GLFW" OFF )
 if( GLFW-CMAKE-STARTER-USE-GLFW-GLAD )
     include_directories("${GLFW_SOURCE_DIR}/deps")
     set( GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad/gl.h" )
@@ -23,9 +25,16 @@ if( MSVC )
     SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:mainCRTStartup" )
 endif()
 
-set( GLFW-CMAKE-STARTER-SRC
-        main.cpp
-        )
+### Compile all files under src/
+file(GLOB_RECURSE GLFW-CMAKE-STARTER-SRC "src/*")
+
+### Compiler warnings
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(-Wnon-virtual-dtor) # Class has virtual functions, but its destructor is not virtual
+    add_compile_options(-Wreorder) # Data member will be initialized after [other] data member
+    add_compile_options(-Wmaybe-uninitialized) # Variable improperly initialized
+    add_compile_options(-Wunused-variable) # Variable is defined but unused
+endif()
 
 add_executable( GLFW-CMake-starter WIN32 ${GLFW-CMAKE-STARTER-SRC} ${GLAD_GL} )
 target_link_libraries( GLFW-CMake-starter ${OPENGL_LIBRARIES} glfw )
