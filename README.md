@@ -1,7 +1,7 @@
-Support our work through [GitHub Sponsors](https://github.com/sponsors/dougbinks) or [Patreon](https://www.patreon.com/enkisoftware)
+# This repo has been repurposed by Jeff to learn OpenGL. 
+Link to tutorial: https://learnopengl.com/Getting-started/Hello-Window.
 
-[<img src="https://img.shields.io/static/v1?logo=github&label=Github&message=Sponsor&color=#ea4aaa" width="200"/>](https://github.com/sponsors/dougbinks)    [<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" alt="Become a Patron" width="150"/>](https://www.patreon.com/enkisoftware)
-
+To find the base cmake template switch to `main` branch and clone from there.
 
 # GLFW CMake starter
 
