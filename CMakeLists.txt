@@ -30,7 +30,6 @@ file(GLOB_RECURSE GLFW-CMAKE-STARTER-SRC "src/*")
 
 ### Compiler warnings
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-Wnon-virtual-dtor) # Class has virtual functions, but its destructor is not virtual
     add_compile_options(-Wreorder) # Data member will be initialized after [other] data member
     add_compile_options(-Wmaybe-uninitialized) # Variable improperly initialized
     add_compile_options(-Wunused-variable) # Variable is defined but unused
