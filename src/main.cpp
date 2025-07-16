@@ -4,8 +4,13 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
+void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, true);
 }
 
 int main(void) {
@@ -29,11 +34,18 @@ int main(void) {
 
   glViewport(0, 0, 800, 600);
 
-  glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
+  // Main rendering loop.
   while (!glfwWindowShouldClose(window)) {
-    glfwSwapBuffers(window);
+    processInput(window);
+
+    // TODO: Rendering here
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     glfwPollEvents();
+    glfwSwapBuffers(window);
   }
 
   glfwTerminate();
