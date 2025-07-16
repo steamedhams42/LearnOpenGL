@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.10 )
 
-project( GLFW-CMake-starter )
+project( LearnOpenGL )
 
 find_package( OpenGL REQUIRED )
 
@@ -26,22 +26,21 @@ if( MSVC )
 endif()
 
 ### Compile all files under src/
-file(GLOB_RECURSE GLFW-CMAKE-STARTER-SRC "src/*")
+file(GLOB_RECURSE LearnOpenGL-src "src/*")
 
 ### Compiler warnings
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-Wnon-virtual-dtor) # Class has virtual functions, but its destructor is not virtual
     add_compile_options(-Wreorder) # Data member will be initialized after [other] data member
     add_compile_options(-Wmaybe-uninitialized) # Variable improperly initialized
     add_compile_options(-Wunused-variable) # Variable is defined but unused
 endif()
 
-add_executable( GLFW-CMake-starter WIN32 ${GLFW-CMAKE-STARTER-SRC} ${GLAD_GL} )
-target_link_libraries( GLFW-CMake-starter ${OPENGL_LIBRARIES} glfw )
+add_executable( LearnOpenGL WIN32 ${LearnOpenGL-src} ${GLAD_GL} )
+target_link_libraries( LearnOpenGL ${OPENGL_LIBRARIES} glfw )
 if( MSVC )
     if(${CMAKE_VERSION} VERSION_LESS "3.6.0")
-        message( "\n\t[ WARNING ]\n\n\tCMake version lower than 3.6.\n\n\t - Please update CMake and rerun; OR\n\t - Manually set 'GLFW-CMake-starter' as StartUp Project in Visual Studio.\n" )
+        message( "\n\t[ WARNING ]\n\n\tCMake version lower than 3.6.\n\n\t - Please update CMake and rerun; OR\n\t - Manually set 'LearnOpenGL' as StartUp Project in Visual Studio.\n" )
     else()
-        set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT GLFW-CMake-starter )
+        set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT LearnOpenGL )
     endif()
 endif()
