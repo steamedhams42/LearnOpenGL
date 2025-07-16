@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
@@ -27,7 +27,9 @@ int main(void) {
     return -1;
   }
 
-  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glViewport(0, 0, 800, 600);
+
+  glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 
   while (!glfwWindowShouldClose(window)) {
     glfwSwapBuffers(window);
