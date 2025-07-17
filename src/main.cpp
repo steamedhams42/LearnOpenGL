@@ -9,8 +9,8 @@
 GLFWwindow* window;
 // Vertex buffer object
 unsigned int VBO;
-// Vertex shader
 unsigned int vertexShader;
+unsigned int fragmentShader;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -58,13 +58,28 @@ void vertexBufferSetup(unsigned int& VBO,
 
 void vertexShaderSetup() {
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &constants::VERTEX_SHADER_SOURCE, NULL);
+  glShaderSource(vertexShader, 1, &shader_source::VERTEX_SHADER_SOURCE, NULL);
   glCompileShader(vertexShader);
   int success;
   char infoLog[512];
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+              << infoLog << std::endl;
+  }
+}
+
+void fragmentShaderSetup() {
+  fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragmentShader, 1, &shader_source::FRAGMENT_SHADER_SOURCE,
+                 NULL);
+  glCompileShader(fragmentShader);
+  int success;
+  char infoLog[512];
+  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
     std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
               << infoLog << std::endl;
   }
@@ -77,8 +92,9 @@ int main(void) {
   float vertices[constants::nVertices] = {-.5, -.5, 0, .5, -.5, 0, 0, .5, 0};
   vertexBufferSetup(VBO, vertices, constants::nVertices);
 
-  // Vertex shader
+  // Shaders
   vertexShaderSetup();
+  fragmentShaderSetup();
 
   // Main rendering loop.
   while (!glfwWindowShouldClose(window)) {
