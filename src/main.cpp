@@ -9,6 +9,8 @@
 GLFWwindow* window;
 // Vertex buffer object
 unsigned int VBO;
+// Vertex shader
+unsigned int vertexShader;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -43,7 +45,9 @@ void processInput(GLFWwindow* window) {
     glfwSetWindowShouldClose(window, true);
 }
 
-void vertexSetup(unsigned int& VBO, float vertices[], const int nVertices) {
+void vertexBufferSetup(unsigned int& VBO,
+                       float vertices[],
+                       const int nVertices) {
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   std::cerr << "Size of vertices in bytes:" << nVertices * sizeof(vertices[0])
@@ -52,11 +56,29 @@ void vertexSetup(unsigned int& VBO, float vertices[], const int nVertices) {
                GL_STATIC_DRAW);
 }
 
+void vertexShaderSetup() {
+  vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertexShader, 1, &constants::VERTEX_SHADER_SOURCE, NULL);
+  glCompileShader(vertexShader);
+  int success;
+  char infoLog[512];
+  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+              << infoLog << std::endl;
+  }
+}
+
 int main(void) {
   windowSetup();
 
+  // Vertex buffer
   float vertices[constants::nVertices] = {-.5, -.5, 0, .5, -.5, 0, 0, .5, 0};
-  vertexSetup(VBO, vertices, constants::nVertices);
+  vertexBufferSetup(VBO, vertices, constants::nVertices);
+
+  // Vertex shader
+  vertexShaderSetup();
 
   // Main rendering loop.
   while (!glfwWindowShouldClose(window)) {
