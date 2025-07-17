@@ -36,6 +36,8 @@ endif()
 
 add_executable( LearnOpenGL WIN32 ${LearnOpenGL-src} ${GLAD_GL} )
 target_link_libraries( LearnOpenGL ${OPENGL_LIBRARIES} glfw )
+# Allows std::cout to work in terminal
+target_link_options(LearnOpenGL PRIVATE -Wl,--subsystem,console)
 if( MSVC )
     if(${CMAKE_VERSION} VERSION_LESS "3.6.0")
         message( "\n\t[ WARNING ]\n\n\tCMake version lower than 3.6.\n\n\t - Please update CMake and rerun; OR\n\t - Manually set 'LearnOpenGL' as StartUp Project in Visual Studio.\n" )
