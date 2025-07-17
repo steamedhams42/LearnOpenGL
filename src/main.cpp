@@ -8,8 +8,6 @@
 #include "constants.h"
 
 GLFWwindow* window;
-// Vertex buffer object
-unsigned int VBO;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -44,17 +42,6 @@ void processInput(GLFWwindow* window) {
     glfwSetWindowShouldClose(window, true);
 }
 
-void vertexBufferSetup(unsigned int& VBO,
-                       float vertices[],
-                       const int nVertices) {
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  std::cerr << "Size of vertices in bytes:" << nVertices * sizeof(vertices[0])
-            << std::endl;
-  glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(vertices[0]), vertices,
-               GL_STATIC_DRAW);
-}
-
 void wasShaderSuccessful(unsigned int& shader) {
   int success;
   char infoLog[512];
@@ -84,14 +71,17 @@ void fragmentShaderSetup(unsigned int& fragmentShader) {
 void shaderSetup(unsigned int& shaderProgram) {
   shaderProgram = glCreateProgram();
 
+  // (1) Vertex shader
   unsigned int vertexShader;
   vertexShaderSetup(vertexShader);
   glAttachShader(shaderProgram, vertexShader);
 
+  // (2) Fragment shader
   unsigned int fragmentShader;
   fragmentShaderSetup(fragmentShader);
   glAttachShader(shaderProgram, fragmentShader);
 
+  // (3) Link shaders
   glLinkProgram(shaderProgram);
   int success;
   char infoLog[512];
@@ -103,8 +93,6 @@ void shaderSetup(unsigned int& shaderProgram) {
     assert(success);
   }
 
-  glUseProgram(shaderProgram);
-
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
 }
@@ -112,13 +100,37 @@ void shaderSetup(unsigned int& shaderProgram) {
 int main(void) {
   windowSetup();
 
-  // Vertex buffer
-  float vertices[constants::nVertices] = {-.5, -.5, 0, .5, -.5, 0, 0, .5, 0};
-  vertexBufferSetup(VBO, vertices, constants::nVertices);
-
-  // Shaders
+  // Build shader program
   unsigned int shaderProgram;
   shaderSetup(shaderProgram);
+
+  // Vertex buffer object
+  unsigned int VBO;
+  // Vertex array object
+  unsigned int VAO;
+  float vertices[constants::nVertices] = {-.5, -.5, 0, .5, -.5, 0, 0, .5, 0};
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  // Bind the Vertex Array Object first
+  glBindVertexArray(VAO);
+  // Bind and set vertex buffer(s)
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  // Configure vertex attributes(s).
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  // Note that this is allowed, the call to glVertexAttribPointer registered VBO
+  // as the vertex attribute's bound vertex buffer object so afterwards we can
+  // safely unbind
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  // You can unbind the VAO afterwards so other VAO calls won't accidentally
+  // modify this VAO, but this rarely happens. Modifying other VAOs requires a
+  // call to glBindVertexArray anyways so we generally don't unbind VAOs (nor
+  // VBOs) when it's not directly necessary.
+  glBindVertexArray(0);
 
   // Main rendering loop.
   while (!glfwWindowShouldClose(window)) {
@@ -128,6 +140,11 @@ int main(void) {
     // Rendering
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // draw our first triangle
+    glUseProgram(shaderProgram);
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glfwPollEvents();
     glfwSwapBuffers(window);
