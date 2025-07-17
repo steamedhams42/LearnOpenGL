@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 ////////////// line here for linter glad.h must be first
 #include <GLFW/glfw3.h>
+#include <cassert>
 #include <iostream>
 
 #include "constants.h"
@@ -9,8 +10,6 @@
 GLFWwindow* window;
 // Vertex buffer object
 unsigned int VBO;
-unsigned int vertexShader;
-unsigned int fragmentShader;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -56,33 +55,58 @@ void vertexBufferSetup(unsigned int& VBO,
                GL_STATIC_DRAW);
 }
 
-void vertexShaderSetup() {
-  vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &shader_source::VERTEX_SHADER_SOURCE, NULL);
-  glCompileShader(vertexShader);
+void wasShaderSuccessful(unsigned int& shader) {
   int success;
   char infoLog[512];
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
   if (!success) {
-    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-              << infoLog << std::endl;
+    glGetShaderInfoLog(shader, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+    assert(success);
   }
 }
 
-void fragmentShaderSetup() {
+void vertexShaderSetup(unsigned int& vertexShader) {
+  vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertexShader, 1, &shader_source::VERTEX_SHADER_SOURCE, NULL);
+  glCompileShader(vertexShader);
+  wasShaderSuccessful(vertexShader);
+}
+
+void fragmentShaderSetup(unsigned int& fragmentShader) {
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &shader_source::FRAGMENT_SHADER_SOURCE,
                  NULL);
   glCompileShader(fragmentShader);
+  wasShaderSuccessful(fragmentShader);
+}
+
+void shaderSetup(unsigned int& shaderProgram) {
+  shaderProgram = glCreateProgram();
+
+  unsigned int vertexShader;
+  vertexShaderSetup(vertexShader);
+  glAttachShader(shaderProgram, vertexShader);
+
+  unsigned int fragmentShader;
+  fragmentShaderSetup(fragmentShader);
+  glAttachShader(shaderProgram, fragmentShader);
+
+  glLinkProgram(shaderProgram);
   int success;
   char infoLog[512];
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
   if (!success) {
-    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER_PROGRAM::COMPILATION_FAILED\n"
               << infoLog << std::endl;
+    assert(success);
   }
+
+  glUseProgram(shaderProgram);
+
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
 }
 
 int main(void) {
@@ -93,8 +117,8 @@ int main(void) {
   vertexBufferSetup(VBO, vertices, constants::nVertices);
 
   // Shaders
-  vertexShaderSetup();
-  fragmentShaderSetup();
+  unsigned int shaderProgram;
+  shaderSetup(shaderProgram);
 
   // Main rendering loop.
   while (!glfwWindowShouldClose(window)) {
