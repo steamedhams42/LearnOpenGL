@@ -1,5 +1,5 @@
 # Only difference between this fork and upstream:
-I added glad/includes manually so it works with LearnOpenGL tutorial.
+I added glad files/includes manually so it works with LearnOpenGL tutorial.
 
 # GLFW CMake starter
 
