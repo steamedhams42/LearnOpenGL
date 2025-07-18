@@ -104,12 +104,6 @@ int main(void) {
   unsigned int shaderProgram;
   shaderSetup(shaderProgram);
 
-  // Vertex buffer object
-  unsigned int VBO;
-  // Vertex array object
-  unsigned int VAO;
-  // Element buffer object
-  unsigned int EBO;
   float vertices[] = {
       0.5f,  0.5f,  0.0f,  // top right
       0.5f,  -0.5f, 0.0f,  // bottom right
@@ -120,29 +114,36 @@ int main(void) {
       0, 1, 3,  // first Triangle
       1, 2, 3   // second Triangle
   };
-  glGenVertexArrays(1, &VAO);
+  unsigned int VBO, VAO, EBO;
+  // Vertex buffer object
   glGenBuffers(1, &VBO);
+  // Vertex array object
+  glGenVertexArrays(1, &VAO);
+  // Element buffer object
   glGenBuffers(1, &EBO);
-  // Bind the Vertex Array Object first, then bind and set vertex buffer(s), and
-  // then configure vertex attributes(s).
+
+  // (1) Bind the Vertex Array Object first
   glBindVertexArray(VAO);
 
+  // (2a) Bind and copy vertices in vertex buffer object.
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+  // (2b) Bind and copy vertex indices in element buffer.
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
                GL_STATIC_DRAW);
 
+  // (3) Configure vertex attributes(s).
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
-  // note that this is allowed, the call to glVertexAttribPointer registered VBO
+  // Note that this is allowed, the call to glVertexAttribPointer registered VBO
   // as the vertex attribute's bound vertex buffer object so afterwards we can
-  // safely unbind
+  // safely unbind.
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  // remember: do NOT unbind the EBO while a VAO is active as the bound element
+  // Remember: do NOT unbind the EBO while a VAO is active as the bound element
   // buffer object IS stored in the VAO; keep the EBO bound.
   // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
