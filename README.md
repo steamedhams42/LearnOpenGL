@@ -1,4 +1,4 @@
-# This repo has been repurposed by Jeff to learn OpenGL. 
+# This repo has been repurposed by me to learn OpenGL. 
 Link to tutorial: https://learnopengl.com/Getting-started/Hello-Window.
 
 To find the base cmake template switch to `main` branch and clone from there.
