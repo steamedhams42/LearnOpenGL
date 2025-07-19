@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "constants.h"
+#include "shaders.h"
 
 GLFWwindow* window;
 
@@ -55,7 +56,7 @@ void wasShaderSuccessful(unsigned int& shader) {
 
 void vertexShaderSetup(unsigned int& vertex_shader) {
   vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertex_shader, 1, &shader_source::VERTEX_SHADER_SOURCE, NULL);
+  glShaderSource(vertex_shader, 1, &vertex_shader::VERTEX_SHADER_SOURCE, NULL);
   glCompileShader(vertex_shader);
   wasShaderSuccessful(vertex_shader);
 }
@@ -103,9 +104,9 @@ int main(void) {
   // Build shader program
   unsigned int orange_shader_program, yellow_shader_program;
   shaderSetup(orange_shader_program,
-              shader_source::ORANGE_FRAGMENT_SHADER_SOURCE);
+              fragment_shader::ORANGE_FRAGMENT_SHADER_SOURCE);
   shaderSetup(yellow_shader_program,
-              shader_source::YELLOW_FRAGMENT_SHADER_SOURCE);
+              fragment_shader::YELLOW_FRAGMENT_SHADER_SOURCE);
 
   float triangle1[] = {
       0.5f,  0.5f,  0.0f,  // top right
