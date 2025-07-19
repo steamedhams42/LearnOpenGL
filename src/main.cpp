@@ -3,6 +3,7 @@
 ////////////// line here for linter glad.h must be first
 #include <GLFW/glfw3.h>
 #include <cassert>
+#include <cmath>
 #include <iostream>
 
 #include "constants.h"
@@ -102,46 +103,39 @@ int main(void) {
   windowSetup();
 
   // Build shader program
-  unsigned int orange_shader_program, yellow_shader_program;
-  shaderSetup(orange_shader_program,
-              fragment_shader::ORANGE_FRAGMENT_SHADER_SOURCE);
+  unsigned int rainbow_shader_program, yellow_shader_program;
+  shaderSetup(rainbow_shader_program,
+              fragment_shader::RAINBOW_FRAGMENT_SHADER_SOURCE);
   shaderSetup(yellow_shader_program,
               fragment_shader::YELLOW_FRAGMENT_SHADER_SOURCE);
 
   float triangle1[] = {
-      0.5f,  0.5f,  0.0f,  // top right
-      0.5f,  -0.5f, 0.0f,  // bottom right
-      -0.5f, 0.5f,  0.0f   // top left
+      // positions         // colors (R, G, B)
+      0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,  // bottom left
+      0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f   // top
   };
-  float triangle2[] = {
-      0.5f,  -0.5f, 0.0f,  // bottom right
-      -0.5f, -0.5f, 0.0f,  // bottom left
-      -0.5f, 0.5f,  0.0f   // top left
-  };
-  unsigned int VBO[2], VAO[2];
+  unsigned int VBO, VAO;
   // Vertex buffer object
-  glGenBuffers(2, VBO);
+  glGenBuffers(1, &VBO);
   // Vertex array object
-  glGenVertexArrays(2, VAO);
+  glGenVertexArrays(1, &VAO);
 
   // (1) Bind the Vertex Array Object first
-  glBindVertexArray(VAO[0]);
+  glBindVertexArray(VAO);
 
   // (2a) Bind and copy vertices in vertex buffer object.
-  glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), triangle1, GL_STATIC_DRAW);
 
   // (3) Configure vertex attributes(s).
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
-  // Triangle 2
-  glBindVertexArray(VAO[1]);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(triangle2), triangle2, GL_STATIC_DRAW);
-  // (3) Configure vertex attributes(s).
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  glEnableVertexAttribArray(0);
+  // (4) Configure triangle color
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                        (void*)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
 
   // Note that this is allowed, the call to glVertexAttribPointer registered VBO
   // as the vertex attribute's bound vertex buffer object so afterwards we can
@@ -171,24 +165,17 @@ int main(void) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Draw our first triangle
-    glUseProgram(orange_shader_program);
-    glBindVertexArray(VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    // Draw using yellow shader
-    glUseProgram(yellow_shader_program);
-    glBindVertexArray(VAO[1]);
+    glUseProgram(rainbow_shader_program);
+    glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glfwPollEvents();
     glfwSwapBuffers(window);
   }
 
-  glDeleteVertexArrays(1, &VAO[0]);
-  glDeleteBuffers(1, &VBO[0]);
-  glDeleteVertexArrays(1, &VAO[1]);
-  glDeleteBuffers(1, &VBO[1]);
-  glDeleteProgram(orange_shader_program);
+  glDeleteVertexArrays(1, &VAO);
+  glDeleteBuffers(1, &VBO);
+  glDeleteProgram(rainbow_shader_program);
   glDeleteProgram(yellow_shader_program);
 
   glfwTerminate();
