@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "constants.h"
-#include "shaders.h"
+#include "shader.h"
 
 GLFWwindow* window;
 
@@ -44,70 +44,14 @@ void processInput(GLFWwindow* window) {
     glfwSetWindowShouldClose(window, true);
 }
 
-void wasShaderSuccessful(unsigned int& shader) {
-  int success;
-  char infoLog[512];
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(shader, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-    assert(success);
-  }
-}
-
-void vertexShaderSetup(unsigned int& vertex_shader) {
-  vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertex_shader, 1, &vertex_shader::VERTEX_SHADER_SOURCE, NULL);
-  glCompileShader(vertex_shader);
-  wasShaderSuccessful(vertex_shader);
-}
-
-void fragmentShaderSetup(unsigned int& fragment_shader,
-                         const char* shader_source) {
-  fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragment_shader, 1, &shader_source, NULL);
-  glCompileShader(fragment_shader);
-  wasShaderSuccessful(fragment_shader);
-}
-
-void shaderSetup(unsigned int& shader_program, const char* shader_source) {
-  shader_program = glCreateProgram();
-
-  // (1) Vertex shader
-  unsigned int vertex_shader;
-  vertexShaderSetup(vertex_shader);
-  glAttachShader(shader_program, vertex_shader);
-
-  // (2) Fragment shader
-  unsigned int fragment_shader;
-  fragmentShaderSetup(fragment_shader, shader_source);
-  glAttachShader(shader_program, fragment_shader);
-
-  // (3) Link shaders
-  glLinkProgram(shader_program);
-  int success;
-  char infoLog[512];
-  glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-  if (!success) {
-    glGetProgramInfoLog(shader_program, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER_PROGRAM::COMPILATION_FAILED\n"
-              << infoLog << std::endl;
-    assert(success);
-  }
-
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
-}
-
 int main(void) {
   windowSetup();
 
-  // Build shader program
-  unsigned int rainbow_shader_program, yellow_shader_program;
-  shaderSetup(rainbow_shader_program,
-              fragment_shader::RAINBOW_FRAGMENT_SHADER_SOURCE);
-  shaderSetup(yellow_shader_program,
-              fragment_shader::YELLOW_FRAGMENT_SHADER_SOURCE);
+  const char* vertex_shader_fp = "src/shaders/vertex/vertex.vs";
+  const char* rainbow_fragment_shader_fp = "src/shaders/fragment/rainbow.frag";
+
+  // Shader shader(vertex_shader_file_path, magenta_fragment_shader_fp);
+  Shader rainbow_shader(vertex_shader_fp, rainbow_fragment_shader_fp);
 
   float triangle1[] = {
       // positions         // colors (R, G, B)
@@ -165,7 +109,7 @@ int main(void) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Draw our first triangle
-    glUseProgram(rainbow_shader_program);
+    rainbow_shader.use();
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -175,8 +119,7 @@ int main(void) {
 
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
-  glDeleteProgram(rainbow_shader_program);
-  glDeleteProgram(yellow_shader_program);
+  rainbow_shader.Delete();
 
   glfwTerminate();
   return 0;
