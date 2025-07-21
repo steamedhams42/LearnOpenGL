@@ -44,9 +44,7 @@ void processInput(GLFWwindow* window) {
     glfwSetWindowShouldClose(window, true);
 }
 
-int main(void) {
-  windowSetup();
-
+void renderTriangle() {
   const char* vertex_shader_fp = "src/shaders/vertex/vertex.vs";
   const char* rainbow_fragment_shader_fp = "src/shaders/fragment/rainbow.frag";
 
@@ -120,6 +118,33 @@ int main(void) {
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
   rainbow_shader.Delete();
+}
+
+void renderTexture() {
+  while (!glfwWindowShouldClose(window)) {
+    // User input listener
+    processInput(window);
+
+    // Rendering code here
+
+    // Buffer swap
+    glfwPollEvents();
+    glfwSwapBuffers(window);
+  }
+}
+
+int main(void) {
+  windowSetup();
+
+  int i = 1;
+  switch (i) {
+    case 0:
+      renderTriangle();
+      break;
+    case 1:
+      renderTexture();
+      break;
+  }
 
   glfwTerminate();
   return 0;
