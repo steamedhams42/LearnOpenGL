@@ -19,6 +19,8 @@ class Shader {
   void set_int(const std::string& name, int value) const;
   void set_float(const std::string& name, float value) const;
 
+  unsigned int id() { return shader_program_; }
+
  private:
   enum ShaderType { VERTEX = 0, FRAGMENT = 1, PROGRAM = 2 };
   void compileShader(unsigned int& shader,

@@ -4,6 +4,9 @@
 #include <GLFW/glfw3.h>
 #include <cassert>
 #include <cmath>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
 #include "constants.h"
@@ -50,7 +53,7 @@ void processInput(GLFWwindow* window) {
 
 void renderTriangle() {
   const char* vertex_shader_fp = "src/shaders/vertex/vertex.vs";
-  const char* rainbow_fragment_shader_fp = "src/shaders/fragment/rainbow.frag";
+  const char* rainbow_fragment_shader_fp = "src/shaders/fragment/texture.frag";
 
   // Shader shader(vertex_shader_file_path, magenta_fragment_shader_fp);
   Shader rainbow_shader(vertex_shader_fp, rainbow_fragment_shader_fp);
@@ -125,7 +128,7 @@ void renderTriangle() {
 }
 
 void renderTexture() {
-  const char* vertex_shader_fp = "src/shaders/vertex/texture_vertex.vs";
+  const char* vertex_shader_fp = "src/shaders/vertex/vertex.vs";
   const char* fragment_shader_fp = "src/shaders/fragment/texture.frag";
   Shader texture_shader(vertex_shader_fp, fragment_shader_fp);
 
@@ -200,16 +203,34 @@ void renderTexture() {
   }
   stbi_image_free(texture_data);
 
+  texture_shader.use();
+  texture_shader.set_int("texture", 0);
   // Main rendering loop
   while (!glfwWindowShouldClose(window)) {
     // User input listener
     processInput(window);
 
+    // Clear background
+    glClear(GL_COLOR_BUFFER_BIT);
+
     // Bind texture
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    // Rendering code here
+    // Create transformations
+    // Initialize matrix to identity first
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::rotate(transform, (float)glfwGetTime(),
+                            glm::vec3(0.0f, 0.0f, 1.0f));
+    transform = glm::translate(transform, glm::vec3(0.25f, -0.25f, 0.0f));
+
+    // Get matrix's uniform location and set matrix
     texture_shader.use();
+    unsigned int transform_loc =
+        glGetUniformLocation(texture_shader.id(), "transform");
+    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform));
+
+    // Rendering code here
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
