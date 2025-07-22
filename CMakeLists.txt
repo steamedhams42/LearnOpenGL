@@ -3,6 +3,7 @@ cmake_minimum_required( VERSION 3.10 )
 project( LearnOpenGL )
 
 find_package( OpenGL REQUIRED )
+find_package(glm REQUIRED)
 
 include_directories( ${OPENGL_INCLUDE_DIRS} )
 include_directories(glad/include)
@@ -34,8 +35,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Wunused-variable) # Variable is defined but unused
 endif()
 
-add_executable( LearnOpenGL WIN32 ${LearnOpenGL-src} ${GLAD_GL} )
-target_link_libraries( LearnOpenGL ${OPENGL_LIBRARIES} glfw )
+add_executable(LearnOpenGL WIN32 ${LearnOpenGL-src} ${GLAD_GL} )
+target_link_libraries(LearnOpenGL ${OPENGL_LIBRARIES} glfw )
+target_link_libraries(LearnOpenGL glm::glm-header-only)
 # Allows std::cout to work in terminal
 target_link_options(LearnOpenGL PRIVATE -Wl,--subsystem,console)
 if( MSVC )
