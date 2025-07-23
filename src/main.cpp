@@ -18,14 +18,67 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-GLFWwindow* window;
+GLFWwindow* WINDOW;
 // Camera starting position
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
+// Mouse
+bool first_mouse = true;
+float last_x = constants::WIDTH / 2.f;
+float last_y = constants::HEIGHT / 2.f;
+float yaw = -90.0;
+float pitch = 0;
+float fov = 45.0;
+
+// keyboard
+float delta_time = 0.0f;
+float last_time = 0.0f;
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
+}
+
+void mouseCallback(GLFWwindow* window, double x, double y) {
+  if (first_mouse) {
+    last_x = x;
+    last_y = y;
+    first_mouse = false;
+  }
+
+  float x_offset = x - last_x;
+  float y_offset = last_y - y;
+  last_x = x;
+  last_y = y;
+
+  float sensitivity = 0.1f;
+  x_offset *= sensitivity;
+  y_offset *= sensitivity;
+
+  yaw += x_offset;
+  pitch += y_offset;
+
+  if (pitch > 89.0f) {
+    pitch = 89.0f;
+  }
+  if (pitch < -89.0f) {
+    pitch = -89.0f;
+  }
+
+  glm::vec3 direction;
+  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  direction.y = sin(glm::radians(pitch));
+  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  cameraFront = glm::normalize(direction);
+}
+
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+  fov -= (float)yoffset;
+  if (fov < 1.0f)
+    fov = 1.0f;
+  if (fov > 45.0f)
+    fov = 45.0f;
 }
 
 float random_real(float x = 1) {
@@ -38,14 +91,14 @@ void windowSetup() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  window = glfwCreateWindow(constants::WIDTH, constants::HEIGHT, "LearnOpenGL",
+  WINDOW = glfwCreateWindow(constants::WIDTH, constants::HEIGHT, "LearnOpenGL",
                             NULL, NULL);
-  if (window == NULL) {
-    std::cout << "Failed to create GLFW window" << std::endl;
+  if (WINDOW == NULL) {
+    std::cout << "Failed to create GLFW WINDOW" << std::endl;
     glfwTerminate();
     exit(-1);
   }
-  glfwMakeContextCurrent(window);
+  glfwMakeContextCurrent(WINDOW);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cout << "Failed to initialize GLAD" << std::endl;
@@ -54,21 +107,26 @@ void windowSetup() {
 
   glViewport(0, 0, constants::WIDTH, constants::HEIGHT);
 
-  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+  glfwSetFramebufferSizeCallback(WINDOW, framebufferSizeCallback);
+  glfwSetCursorPosCallback(WINDOW, mouseCallback);
+  glfwSetScrollCallback(WINDOW, scrollCallback);
+
+  // tell GLFW to capture our mouse
+  glfwSetInputMode(WINDOW, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void processInput(float delta_time) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, true);
+  if (glfwGetKey(WINDOW, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(WINDOW, true);
   const float cameraSpeed = 2.5f * delta_time;
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+  if (glfwGetKey(WINDOW, GLFW_KEY_W) == GLFW_PRESS)
     cameraPos += cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+  if (glfwGetKey(WINDOW, GLFW_KEY_S) == GLFW_PRESS)
     cameraPos -= cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+  if (glfwGetKey(WINDOW, GLFW_KEY_A) == GLFW_PRESS)
     cameraPos -=
         glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+  if (glfwGetKey(WINDOW, GLFW_KEY_D) == GLFW_PRESS)
     cameraPos +=
         glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
@@ -162,11 +220,6 @@ void renderTexture() {
   // note: currently we set the projection matrix each frame, but since the
   // projection matrix rarely changes it's often best practice to set it
   // outside the main loop only once.
-  glm::mat4 projection = glm::mat4(1.0f);
-  projection = glm::perspective(glm::radians(45.0f), constants::ASPECT_RATIO,
-                                constants::NEAR, constants::FAR);
-  texture_shader.set_mat4("projection", projection);
-
   std::array<std::array<float, 4>, constants::nCubes> cube_axes = {};
   for (int i = 0; i < constants::nCubes; i++) {
     cube_axes[i] = {random_real(), random_real(), random_real(),
@@ -175,10 +228,8 @@ void renderTexture() {
     //           << cube_axes[i][3] << std::endl;
   }
 
-  float delta_time = 0.0f;
-  float last_time = 0.0f;
   // Main rendering loop
-  while (!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(WINDOW)) {
     // User input listener
     float current_time = glfwGetTime();
     delta_time = current_time - last_time;
@@ -195,16 +246,22 @@ void renderTexture() {
     // Activate shader
     texture_shader.use();
 
-    // Create transformations
-    // Camera position and rotations
+    // Perspective projection. 3D -> 2D
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::perspective(glm::radians(fov), constants::ASPECT_RATIO,
+                                  constants::NEAR, constants::FAR);
+    texture_shader.set_mat4("projection", projection);
+
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    // retrieve the matrix uniform locations
-    unsigned int modelLoc = glGetUniformLocation(texture_shader.id(), "model");
+
+    // Create camera position and rotation transformations
     unsigned int viewLoc = glGetUniformLocation(texture_shader.id(), "view");
-    // pass them to the shaders (3 different ways)
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
     texture_shader.set_mat4("view", view);
+
+    // Retrieve the matrix uniform locations
+    unsigned int modelLoc = glGetUniformLocation(texture_shader.id(), "model");
 
     // render box(es)
     glBindVertexArray(VAO);
@@ -224,7 +281,7 @@ void renderTexture() {
 
     // Buffer swap
     glfwPollEvents();
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(WINDOW);
   }
 }
 
