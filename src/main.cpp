@@ -19,6 +19,10 @@
 #include "stb_image.h"
 
 GLFWwindow* window;
+// Camera starting position
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -53,9 +57,20 @@ void windowSetup() {
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(float delta_time) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
+  const float cameraSpeed = 2.5f * delta_time;
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    cameraPos += cameraSpeed * cameraFront;
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    cameraPos -= cameraSpeed * cameraFront;
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    cameraPos -=
+        glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    cameraPos +=
+        glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 void renderTexture() {
@@ -160,10 +175,15 @@ void renderTexture() {
     //           << cube_axes[i][3] << std::endl;
   }
 
+  float delta_time = 0.0f;
+  float last_time = 0.0f;
   // Main rendering loop
   while (!glfwWindowShouldClose(window)) {
     // User input listener
-    processInput(window);
+    float current_time = glfwGetTime();
+    delta_time = current_time - last_time;
+    last_time = current_time;
+    processInput(delta_time);
 
     // Clear background and buffer bit
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -176,12 +196,8 @@ void renderTexture() {
     texture_shader.use();
 
     // Create transformations
-    const float radius = 10.0f;
-    float camX = sin(glfwGetTime()) * radius;
-    float camZ = cos(glfwGetTime()) * radius;
-    glm::mat4 view =
-        glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
-                    glm::vec3(0.0, 1.0, 0.0));
+    // Camera position and rotations
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     // retrieve the matrix uniform locations
     unsigned int modelLoc = glGetUniformLocation(texture_shader.id(), "model");
