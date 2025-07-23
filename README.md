@@ -1,4 +1,4 @@
-# This repo has been repurposed by me to learn OpenGL on VS Code + CMake (No Visual Studio)
+# This repo has been repurposed by me to learn OpenGL on VS Code + CMake
 Link to tutorial: https://learnopengl.com/Getting-started/Hello-Window.
 
 To find the base cmake template switch to `main` branch and clone from there.
