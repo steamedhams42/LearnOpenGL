@@ -4,7 +4,7 @@
 namespace constants {
 
 const int WIDTH = 1440;
-const int HEIGHT = 900;
+const int HEIGHT = 800;
 
 const float ASPECT_RATIO = 1.0f * WIDTH / HEIGHT;
 

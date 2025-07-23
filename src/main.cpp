@@ -176,7 +176,12 @@ void renderTexture() {
     texture_shader.use();
 
     // Create transformations
-    glm::mat4 view = glm::mat4(1.0f);
+    const float radius = 10.0f;
+    float camX = sin(glfwGetTime()) * radius;
+    float camZ = cos(glfwGetTime()) * radius;
+    glm::mat4 view =
+        glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
+                    glm::vec3(0.0, 1.0, 0.0));
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     // retrieve the matrix uniform locations
     unsigned int modelLoc = glGetUniformLocation(texture_shader.id(), "model");
