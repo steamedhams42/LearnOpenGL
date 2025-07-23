@@ -2,6 +2,7 @@
 #define SHADER_H
 
 #include <glad/glad.h>  // include glad to get all the required OpenGL headers
+#include <glm/glm.hpp>
 
 #include <string>
 
@@ -18,6 +19,7 @@ class Shader {
   void set_bool(const std::string& name, bool value) const;
   void set_int(const std::string& name, int value) const;
   void set_float(const std::string& name, float value) const;
+  void set_mat4(const std::string& name, const glm::mat4& mat) const;
 
   unsigned int id() { return shader_program_; }
 
