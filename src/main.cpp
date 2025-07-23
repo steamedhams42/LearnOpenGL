@@ -2,12 +2,15 @@
 #include <glad/glad.h>
 ////////////// line here for linter glad.h must be first
 #include <GLFW/glfw3.h>
+#include <array>
 #include <cassert>
 #include <cmath>
+#include <ctime>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <random>
 
 #include "constants.h"
 #include "shader.h"
@@ -19,6 +22,10 @@ GLFWwindow* window;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
+}
+
+float random_real(float x = 1) {
+  return x * std::rand() / RAND_MAX;
 }
 
 void windowSetup() {
@@ -55,6 +62,8 @@ void renderTexture() {
   const char* vertex_shader_fp = "src/shaders/vertex/vertex.vs";
   const char* fragment_shader_fp = "src/shaders/fragment/texture.frag";
   Shader texture_shader(vertex_shader_fp, fragment_shader_fp);
+
+  std::srand(std::time(NULL));
 
   float vertices[] = {
       -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
@@ -143,6 +152,14 @@ void renderTexture() {
                                 constants::NEAR, constants::FAR);
   texture_shader.set_mat4("projection", projection);
 
+  std::array<std::array<float, 4>, constants::nCubes> cube_axes = {};
+  for (int i = 0; i < constants::nCubes; i++) {
+    cube_axes[i] = {random_real(), random_real(), random_real(),
+                    random_real(360)};
+    // std::cout << cube_axes[i][0] << cube_axes[i][1] << cube_axes[i][2]
+    //           << cube_axes[i][3] << std::endl;
+  }
+
   // Main rendering loop
   while (!glfwWindowShouldClose(window)) {
     // User input listener
@@ -170,13 +187,14 @@ void renderTexture() {
 
     // render box(es)
     glBindVertexArray(VAO);
-    for (unsigned int i = 0; i < 10; i++) {
+    for (unsigned int i = 0; i < constants::nCubes; i++) {
       // calculate the model matrix for each object and pass it to shader before
       // drawing
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, cubePositions[i]);
-      model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f),
-                          glm::vec3(1.0f, 0.3f, 0.5f));
+      model = glm::rotate(
+          model, (float)glfwGetTime() * glm::radians(cube_axes[i][3]),
+          glm::vec3(cube_axes[i][0], cube_axes[i][1], cube_axes[i][2]));
       glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
       texture_shader.set_mat4("model", model);
 
