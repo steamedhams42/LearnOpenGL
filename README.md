@@ -1,4 +1,4 @@
-# This repo has been modified by me to learn OpenGL on VS Code + CMake
+# This repo has been modified by me to learn OpenGL on VS Code with CMake
 Link to tutorial: https://learnopengl.com/Getting-started/Hello-Window.
 
 Modifications made in `LearnOpenGL` branch to work in VS Code and CMake
