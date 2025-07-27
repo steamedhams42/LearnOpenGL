@@ -1,8 +1,3 @@
-# This repo has been modified by me to learn OpenGL on VS Code with CMake
-Link to tutorial: https://learnopengl.com/Getting-started/Hello-Window.
-
-Modifications made in `LearnOpenGL` branch to work in VS Code and CMake
-
 # GLFW CMake starter
 
 This starter project shows how to use CMake to create a project with GLFW. The code is multi-platform and runs on Windows, Linux and MacOS.
